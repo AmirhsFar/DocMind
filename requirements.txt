@@ -1,0 +1,10 @@
+fastapi[standard]>=0.135
+uvicorn[standard]>=0.34
+pydantic>=2.10
+pydantic-settings>=2.7
+sqlalchemy[asyncio]>=2.0.36
+asyncpg>=0.30
+alembic>=1.14
+redis>=5.2
+celery>=5.4
+python-dotenv>=1.0

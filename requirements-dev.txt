@@ -3,3 +3,5 @@ pytest-asyncio>=0.24
 httpx>=0.28
 ruff>=0.15
 pre-commit>=4.0
+# Phase 1 — in-memory SQLite for standalone auth tests
+aiosqlite>=0.21

@@ -3,10 +3,11 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 import redis.asyncio as redis
-from fastapi import FastAPI, Depends
+from fastapi import Depends, FastAPI
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.auth import router as auth_router
 from api.core.config import get_settings
 from api.core.database import get_db
 from api.core.logging import configure_logging
@@ -23,21 +24,28 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Shutting down DocMind API")
 
 
-app = FastAPI(title="DocMind API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="DocMind API", version="0.2.0", lifespan=lifespan)
+
+# ── Routers ───────────────────────────────────────────────────────────────────
+app.include_router(auth_router)
+# Phase 2: app.include_router(documents_router)
+# Phase 4: app.include_router(chat_router)
 
 
-@app.get("/")
+# ── Infrastructure endpoints ──────────────────────────────────────────────────
+
+
+@app.get("/", tags=["meta"])
 async def root() -> dict[str, str]:
     """Unauthenticated sanity check — confirms the API process is up at all."""
     return {"message": "DocMind API", "status": "running"}
 
 
-@app.get("/health")
+@app.get("/health", tags=["meta"])
 async def health(db: AsyncSession = Depends(get_db)) -> dict[str, str]:
-    """Checks that the API can actually reach Postgres and Redis.
+    """Confirms the API can reach both Postgres and Redis.
 
-    This is the endpoint Phase 0 is really about: if this returns 200,
-    every container in docker-compose is wired up correctly.
+    This is the integration health check used by docker-compose and CI.
     """
     await db.execute(text("SELECT 1"))
 

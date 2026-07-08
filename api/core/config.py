@@ -18,6 +18,13 @@ class Settings(BaseSettings):
     anthropic_api_key: str | None = None
     openai_api_key: str | None = None
 
+    # MinIO Storage Settings
+    minio_endpoint: str = "minio:9000"
+    minio_access_key: str = "minioadmin"
+    minio_secret_key: str = "minioadmin"
+    minio_bucket_name: str = "docmind-files"
+    minio_secure: bool = False
+
 
 @lru_cache
 def get_settings() -> Settings:

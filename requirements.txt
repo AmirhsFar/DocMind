@@ -13,3 +13,5 @@ python-dotenv>=1.0
 PyJWT>=2.9
 bcrypt>=4.2
 email-validator>=2.2
+# Phase 2 — docs
+minio>=7.2.0

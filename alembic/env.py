@@ -27,8 +27,8 @@ from alembic import context
 from api.auth.models import User  # noqa: F401
 from api.core.config import get_settings
 from api.core.database import Base
+from api.documents.models import Document  # noqa: F401
 
-# Phase 2: from api.documents.models import Document, DocumentChunk  # noqa: F401
 # Phase 4: from api.chat.models import ChatSession, ChatMessage      # noqa: F401
 
 settings = get_settings()

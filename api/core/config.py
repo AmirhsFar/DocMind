@@ -22,8 +22,9 @@ class Settings(BaseSettings):
     minio_endpoint: str = "minio:9000"
     minio_access_key: str = "minioadmin"
     minio_secret_key: str = "minioadmin"
-    minio_bucket_name: str = "docmind-files"
+    minio_bucket: str = "docmind-files"
     minio_secure: bool = False
+    max_upload_size_mb: int = 10
 
 
 @lru_cache

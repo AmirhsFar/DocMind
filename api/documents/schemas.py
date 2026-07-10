@@ -13,5 +13,8 @@ class DocumentOut(BaseModel):
 
     id: uuid.UUID
     filename: str
+    content_type: str
+    size_bytes: int
     status: DocStatus
     created_at: datetime
+    updated_at: datetime

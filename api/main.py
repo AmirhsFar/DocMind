@@ -11,6 +11,8 @@ from api.auth import router as auth_router
 from api.core.config import get_settings
 from api.core.database import get_db
 from api.core.logging import configure_logging
+from api.documents import router as documents_router
+from api.documents.storage import StorageClient
 
 settings = get_settings()
 logger = logging.getLogger("docmind")
@@ -20,7 +22,17 @@ logger = logging.getLogger("docmind")
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     configure_logging()
     logger.info("Starting DocMind API (env=%s)", settings.environment)
+
+    # Initialise MinIO client and guarantee the bucket exists before any
+    # request is handled.  Routes access the client via the get_storage
+    # dependency, which reads from app.state.storage.
+    storage = StorageClient.from_settings(settings)
+    await storage.ensure_bucket()
+    app.state.storage = storage
+    logger.info("Storage ready (bucket=%s)", settings.minio_bucket)
+
     yield
+
     logger.info("Shutting down DocMind API")
 
 
@@ -28,7 +40,7 @@ app = FastAPI(title="DocMind API", version="0.2.0", lifespan=lifespan)
 
 # ── Routers ───────────────────────────────────────────────────────────────────
 app.include_router(auth_router)
-# Phase 2: app.include_router(documents_router)
+app.include_router(documents_router)
 # Phase 4: app.include_router(chat_router)
 
 

@@ -56,7 +56,7 @@ async def docs_client(
     fake_storage = FakeStorageClient()
 
     # Mock Celery task dispatch — .delay() would otherwise try to connect to Redis.
-    monkeypatch.setattr("api.documents.router.process_document", MagicMock())
+    monkeypatch.setattr("worker.tasks.process_document.delay", MagicMock())
 
     async def _get_db() -> AsyncGenerator[AsyncSession, None]:
         yield docs_db
@@ -131,9 +131,9 @@ async def test_upload_unsupported_type(docs_client: tuple) -> None:
 
 async def test_upload_too_large(docs_client: tuple, monkeypatch) -> None:
     """Override _MAX_BYTES to avoid allocating a real 10 MB buffer in tests."""
-    import api.documents.router as router_mod
+    import sys
 
-    monkeypatch.setattr(router_mod, "_MAX_BYTES", 5)
+    monkeypatch.setattr(sys.modules["api.documents.router"], "_MAX_BYTES", 5)
 
     client, _ = docs_client
     resp = await client.post(

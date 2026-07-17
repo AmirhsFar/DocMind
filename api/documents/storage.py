@@ -115,3 +115,21 @@ class StorageClient:
             expires=timedelta(seconds=expires_seconds),
         )
         return url
+
+    async def get_object(self, key: str) -> bytes:
+        """Download and return the raw bytes stored under *key*.
+
+        Used by the Celery worker (Phase 3) to pull a file back out of MinIO
+        for text extraction. Like the other methods, the blocking MinIO call
+        is offloaded to a thread so the event loop stays free.
+        """
+        try:
+            response = await asyncio.to_thread(self._client.get_object, self._bucket, key)
+            try:
+                return response.read()
+            finally:
+                response.close()
+                response.release_conn()
+        except S3Error as exc:
+            logger.error("MinIO get_object failed for key=%s: %s", key, exc)
+            raise

@@ -9,6 +9,8 @@ FastAPI's dependency_overrides can swap them in transparently.
 
 from typing import Any
 
+from api.documents.embeddings import EMBEDDING_DIMENSIONS
+
 
 class FakeStorageClient:
     """In-memory substitute for `api.documents.storage.StorageClient`.
@@ -33,3 +35,28 @@ class FakeStorageClient:
     async def presigned_get_url(self, key: str, expires_seconds: int = 3600) -> str:
         # Return a deterministic fake URL so tests can assert on its shape.
         return f"http://fake-minio/{key}?expires={expires_seconds}"
+
+    async def get_object(self, key: str) -> bytes:
+        return self.objects[key]["data"]
+
+
+class FakeEmbeddingClient:
+    """In-memory substitute for `api.documents.embeddings.EmbeddingClient`.
+
+    Returns a short, deterministic vector per input text — no network calls,
+    no real OpenAI account needed — and records every batch it was asked to
+    embed so tests can assert on what the ingestion pipeline actually sent.
+    """
+
+    def __init__(self, dimensions: int = EMBEDDING_DIMENSIONS) -> None:
+        self.dimensions = dimensions
+        self.embedded_batches: list[list[str]] = []
+
+    async def embed_texts(self, texts: list[str]) -> list[list[float]]:
+        self.embedded_batches.append(list(texts))
+        return [self._fake_vector(text) for text in texts]
+
+    def _fake_vector(self, text: str) -> list[float]:
+        vector = [0.0] * self.dimensions
+        vector[0] = float(len(text))
+        return vector

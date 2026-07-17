@@ -15,3 +15,8 @@ bcrypt>=4.2
 email-validator>=2.2
 # Phase 2 — docs
 minio>=7.2.0
+# Phase 3 — ingestion
+pgvector>=0.3.6
+pypdf>=5.1.0
+tiktoken>=0.8.0
+openai>=1.54.0

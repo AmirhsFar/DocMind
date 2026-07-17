@@ -1,10 +1,10 @@
 import uuid
 from collections.abc import Sequence
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.documents.models import DocStatus, Document
+from api.documents.models import DocStatus, Document, DocumentChunk
 
 
 async def create_document(
@@ -68,3 +68,16 @@ async def update_document_status(
     await db.commit()
     await db.refresh(document)
     return document
+
+
+async def replace_document_chunks(
+    db: AsyncSession, document_id: uuid.UUID, chunks: Sequence[DocumentChunk]
+) -> None:
+    """Atomically swap out all chunks belonging to *document_id* for *chunks*.
+
+    Deletes any existing rows first so a retried ingestion run overwrites
+    its own partial output instead of accumulating duplicates.
+    """
+    await db.execute(delete(DocumentChunk).where(DocumentChunk.document_id == document_id))
+    db.add_all(chunks)
+    await db.commit()

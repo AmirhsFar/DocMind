@@ -51,7 +51,7 @@ tests/
 - [x] Phase 0 — repo skeleton, Postgres + Redis, CI, tests
 - [x] Phase 1 — auth (signup/login, JWT, Alembic migrations)
 - [x] Phase 2 — document upload + object storage (MinIO)
-- [ ] Phase 3 — ingestion pipeline (Celery: extract, chunk, embed → pgvector)
+- [x] Phase 3 — ingestion pipeline (Celery: extract, chunk, embed → pgvector)
 - [ ] Phase 4 — retrieval + chat (similarity search, LLM call, SSE streaming)
 - [ ] Phase 5 — frontend (React + Vite)
 - [ ] Phase 6 — hardening (rate limiting, structured logging, test coverage)

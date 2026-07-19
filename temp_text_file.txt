@@ -1,0 +1,10 @@
+This sandbox had no network access and no live Postgres,
+so nothing could actually be executed — no pip install,
+no test run. Everything was written by careful manual review
+and mirroring the exact patterns Phases 0–3 already established,
+then syntax-checked with py_compile/ast.parse.
+Run make test-unit first (should pass cleanly,
+since it only needs SQLite + faked clients);
+then make test with a real Postgres to verify
+the one genuinely unverified piece — the pgvector <=> query itself —
+plus a real ANTHROPIC_API_KEY to check the actual streaming call.

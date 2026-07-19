@@ -8,10 +8,12 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import router as auth_router
+from api.chat import router as chat_router
 from api.core.config import get_settings
 from api.core.database import get_db
 from api.core.logging import configure_logging
 from api.documents import router as documents_router
+from api.documents.embeddings import EMBEDDING_MODEL, EmbeddingClient
 from api.documents.storage import StorageClient
 
 settings = get_settings()
@@ -31,17 +33,27 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     app.state.storage = storage
     logger.info("Storage ready (bucket=%s)", settings.minio_bucket)
 
+    # Built once here (same pattern as storage) so api/chat/router.py can
+    # embed the user's question via the get_embedding_client dependency
+    # without constructing a fresh OpenAI client on every request. Unlike
+    # the chat LLM client (built lazily inside api/chat/rag.py), this is
+    # safe to build eagerly: OPENAI_API_KEY has been a hard requirement
+    # since Phase 3 already, so this doesn't introduce a new way for a
+    # missing key to take down startup.
+    app.state.embedding_client = EmbeddingClient.from_settings(settings)
+    logger.info("Embedding client ready (model=%s)", EMBEDDING_MODEL)
+
     yield
 
     logger.info("Shutting down DocMind API")
 
 
-app = FastAPI(title="DocMind API", version="0.2.0", lifespan=lifespan)
+app = FastAPI(title="DocMind API", version="0.4.0", lifespan=lifespan)
 
 # ── Routers ───────────────────────────────────────────────────────────────────
 app.include_router(auth_router)
 app.include_router(documents_router)
-# Phase 4: app.include_router(chat_router)
+app.include_router(chat_router)
 
 
 # ── Infrastructure endpoints ──────────────────────────────────────────────────

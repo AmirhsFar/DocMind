@@ -25,11 +25,10 @@ from alembic import context
 # ── Import every model so its table is registered on Base.metadata ────────────
 # Add a new import here whenever you create a new model file.
 from api.auth.models import User  # noqa: F401
+from api.chat.models import ChatMessage, ChatSession  # noqa: F401
 from api.core.config import get_settings
 from api.core.database import Base
 from api.documents.models import Document, DocumentChunk  # noqa: F401
-
-# Phase 4: from api.chat.models import ChatSession, ChatMessage      # noqa: F401
 
 settings = get_settings()
 

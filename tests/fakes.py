@@ -7,6 +7,7 @@ Pattern: each fake implements the same interface as the real client, so
 FastAPI's dependency_overrides can swap them in transparently.
 """
 
+from collections.abc import AsyncIterator
 from typing import Any
 
 from api.documents.embeddings import EMBEDDING_DIMENSIONS
@@ -60,3 +61,25 @@ class FakeEmbeddingClient:
         vector = [0.0] * self.dimensions
         vector[0] = float(len(text))
         return vector
+
+
+class FakeLLMClient:
+    """In-memory substitute for `api.chat.rag.LLMClient`.
+
+    Streams a fixed reply word-by-word (no network, no real Anthropic
+    account needed) and records every call so tests can assert on the
+    system prompt / messages that were actually sent. Set `should_fail`
+    to exercise retrieve_and_stream's error-handling path.
+    """
+
+    def __init__(self, reply: str = "This is a fake answer.") -> None:
+        self.reply = reply
+        self.should_fail = False
+        self.calls: list[dict[str, object]] = []
+
+    async def stream_reply(self, system: str, messages: list[dict[str, str]]) -> AsyncIterator[str]:
+        self.calls.append({"system": system, "messages": messages})
+        if self.should_fail:
+            raise RuntimeError("simulated LLM failure")
+        for word in self.reply.split(" "):
+            yield word + " "

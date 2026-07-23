@@ -26,7 +26,7 @@ async def get_sessions_by_user(db: AsyncSession, user_id: uuid.UUID) -> Sequence
     result = await db.execute(
         select(ChatSession)
         .where(ChatSession.user_id == user_id)
-        .order_by(ChatSession.created_at.desc())
+        .order_by(ChatSession.updated_at.desc())
     )
     return result.scalars().all()
 

@@ -12,6 +12,7 @@ Three tiers, in order of increasing infrastructure need:
     docker-compose, not the standalone suite.
 """
 
+import asyncio
 import uuid
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime
@@ -272,6 +273,7 @@ async def test_list_sessions_empty(chat_client: AsyncClient) -> None:
 
 async def test_list_sessions_newest_first(chat_client: AsyncClient) -> None:
     await chat_client.post("/chat/sessions", json={"title": "First"})
+    await asyncio.sleep(1)
     await chat_client.post("/chat/sessions", json={"title": "Second"})
     resp = await chat_client.get("/chat/sessions")
     assert [s["title"] for s in resp.json()] == ["Second", "First"]

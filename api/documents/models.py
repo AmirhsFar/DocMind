@@ -43,7 +43,7 @@ class Document(Base):
     content_type: Mapped[str] = mapped_column(String(100), nullable=False)
     size_bytes: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[DocStatus] = mapped_column(
-        ENUM(DocStatus, name="doc_status_enum", create_type=False),
+        ENUM(DocStatus, name="doc_status_enum", create_type=False, values_callable=lambda obj: [e.value for e in obj]),
         default=DocStatus.PENDING,
         nullable=False,
     )
